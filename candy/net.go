@@ -36,6 +36,7 @@ type Net struct {
 	net  uint32
 	host uint32
 	mask uint32
+	iface *net.Interface
 }
 
 var idNetMap map[uint]*Net
@@ -169,15 +170,25 @@ func InsertNet(netModel *model.Net) {
 	mask := binary.BigEndian.Uint32(ipNet.Mask)
 	hostid := rand.Uint32() & ^mask
 
-	net := &Net{
+	n := &Net{
 		model:   netModel,
 		ipWsMap: make(map[uint32]*candysocket),
 		net:     netid,
 		host:    hostid,
 		mask:    mask,
 	}
-	net.updateHost()
-	idNetMap[netModel.ID] = net
+
+	// Resolve network interface for kernel routing
+	if netModel.IfName != "" {
+		if iface, err := net.InterfaceByName(netModel.IfName); err == nil {
+			n.iface = iface
+		} else {
+			logger.Debug("failed to find interface %s: %v", netModel.IfName, err)
+		}
+	}
+
+	n.updateHost()
+	idNetMap[netModel.ID] = n
 }
 
 func UpdateNet(netModel *model.Net) {

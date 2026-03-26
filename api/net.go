@@ -19,6 +19,7 @@ func NetShow(c *gin.Context) {
 		DHCP      string `json:"dhcp"`
 		Broadcast bool   `json:"broadcast"`
 		Lease     uint   `json:"lease"`
+		IfName    string `json:"ifname"`
 	}
 
 	response := make([]netinfo, 0)
@@ -30,6 +31,7 @@ func NetShow(c *gin.Context) {
 			DHCP:      n.DHCP,
 			Broadcast: n.Broadcast,
 			Lease:     n.Lease,
+			IfName:    n.IfName,
 		})
 	}
 
@@ -45,6 +47,7 @@ func NetInsert(c *gin.Context) {
 		DHCP      string `json:"dhcp"`
 		Broadcast bool   `json:"broadcast"`
 		Lease     uint   `json:"lease"`
+		IfName    string `json:"ifname"`
 	}
 
 	if err := c.ShouldBindJSON(&request); err != nil {
@@ -84,6 +87,8 @@ func NetInsert(c *gin.Context) {
 	netModel.Password = request.Password
 	netModel.DHCP = request.DHCP
 	netModel.Broadcast = request.Broadcast
+	netModel.Lease = request.Lease
+	netModel.IfName = request.IfName
 	netModel.Create()
 	candy.InsertNet(netModel)
 
@@ -94,6 +99,7 @@ func NetInsert(c *gin.Context) {
 		"dhcp":      netModel.DHCP,
 		"broadcast": netModel.Broadcast,
 		"lease":     netModel.Lease,
+		"ifname":    netModel.IfName,
 	})
 }
 
@@ -105,6 +111,7 @@ func NetEdit(c *gin.Context) {
 		DHCP      string `json:"dhcp"`
 		Broadcast bool   `json:"broadcast"`
 		Lease     uint   `json:"lease"`
+		IfName    string `json:"ifname"`
 	}
 
 	if err := c.ShouldBindJSON(&request); err != nil {
@@ -140,6 +147,7 @@ func NetEdit(c *gin.Context) {
 	netModel.DHCP = request.DHCP
 	netModel.Broadcast = request.Broadcast
 	netModel.Lease = request.Lease
+	netModel.IfName = request.IfName
 	netModel.Update()
 	candy.UpdateNet(&netModel)
 
@@ -150,6 +158,7 @@ func NetEdit(c *gin.Context) {
 		"dhcp":      netModel.DHCP,
 		"broadcast": netModel.Broadcast,
 		"lease":     netModel.Lease,
+		"ifname":    netModel.IfName,
 	})
 }
 

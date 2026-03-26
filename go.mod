@@ -12,6 +12,8 @@ require (
 	github.com/lunixbochs/struc v0.0.0-20200707160740-784aaebc1d40
 	github.com/oschwald/geoip2-golang v1.11.0
 	github.com/sirupsen/logrus v1.9.3
+	github.com/vishvananda/netlink v1.3.0
+	github.com/vishvananda/netns v0.0.0-20200728197558-dc457d4a96bc
 	gorm.io/gorm v1.25.11
 )
 

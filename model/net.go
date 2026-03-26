@@ -22,6 +22,7 @@ type Net struct {
 	DHCP      string
 	Broadcast bool
 	Lease     uint
+	IfName    string // Interface name for kernel routing
 }
 
 func (n *Net) Create() {

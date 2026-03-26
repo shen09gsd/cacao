@@ -479,6 +479,12 @@ func (ws *candysocket) updateSystemRoute() {
 	db := storage.Get()
 	routes := []model.Route{}
 	db.Where(&model.Route{NetID: ws.net.model.ID}).Order("priority").Find(&routes)
+
+	// Flush old kernel routes if we have an interface configured
+	if ws.net.iface != nil {
+		FlushKernelRoutes(ws.net.iface.Name)
+	}
+
 	for _, route := range routes {
 		deviceAddr := strIpToUint32(route.DevAddr)
 		deviceMask := strIpToUint32(route.DevMask)
@@ -491,10 +497,39 @@ func (ws *candysocket) updateSystemRoute() {
 		nextHop := strIpToUint32(route.NextHop)
 		body := &RouteMessageEntry{Dest: destAddr, Mask: destMask, NextHop: nextHop}
 		struc.Pack(&bodyBuffer, body)
+
+		// Add route to kernel routing table if interface is configured
+		if ws.net.iface != nil {
+			dstCIDR := route.DstAddr + "/" + maskToCIDR(route.DstMask)
+			if _, dstNet, err := net.ParseCIDR(dstCIDR); err == nil {
+				gwIP := net.ParseIP(route.NextHop)
+				if gwIP != nil {
+					AddKernelRoute(dstNet, gwIP, ws.net.iface)
+				}
+			}
+		}
 	}
 	if header.Size > 0 {
 		headerBuffer := bytes.Buffer{}
 		struc.Pack(&headerBuffer, header)
 		ws.writeMessage(append(headerBuffer.Bytes(), bodyBuffer.Bytes()...))
 	}
+}
+
+// maskToCIDR converts a dotted decimal netmask to CIDR notation
+func maskToCIDR(mask string) string {
+	parts := strings.Split(mask, ".")
+	if len(parts) != 4 {
+		return "32"
+	}
+	var cidr int
+	for _, p := range parts {
+		var octet int
+		fmt.Sscanf(p, "%d", &octet)
+		for octet > 0 {
+			cidr += octet & 1
+			octet >>= 1
+		}
+	}
+	return fmt.Sprintf("%d", cidr)
 }
