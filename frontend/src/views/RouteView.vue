@@ -11,6 +11,9 @@
             <a-button type="primary" @click="openRouteDialog">
               {{ $t('route.add') }}
             </a-button>
+            <a-button @click="openBatchImportDialog">
+              {{ $t('route.batchImport') }}
+            </a-button>
           </a-space>
           <a-table :columns="routeColumns" :dataSource="routeSource" :scroll="{ x: 'max-content' }">
             <template #bodyCell="{ column, record }">
@@ -72,6 +75,29 @@
                 v-model:value="routeDialogState.priority"
                 :placeholder="$t('route.placeholder.priority')"
               />
+            </a-form-item>
+          </a-form>
+        </a-modal>
+        <a-modal v-model:open="batchImportDialogOpen" :title="$t('route.batchImportTitle')" @ok="doBatchImport">
+          <a-form :model="batchImportState" :style="{ margin: '24px 0 0' }">
+            <a-form-item>
+              <a-select
+                ref="select"
+                v-model:value="batchImportState.netid"
+                :placeholder="$t('route.placeholder.network')"
+                :options="netOptions"
+              >
+              </a-select>
+            </a-form-item>
+            <a-form-item>
+              <a-upload
+                :before-upload="handleFileSelect"
+                :file-list="fileList"
+                accept=".txt"
+                :remove="handleFileRemove"
+              >
+                <a-button>{{ $t('route.selectFile') }}</a-button>
+              </a-upload>
             </a-form-item>
           </a-form>
         </a-modal>
@@ -229,4 +255,47 @@ const updateNetMap = async () => {
 onBeforeMount(() => {
   updateNetMap()
 })
+
+const batchImportDialogOpen = ref(false)
+const batchImportState = ref({
+  netid: null
+})
+const fileList = ref([])
+
+const openBatchImportDialog = () => {
+  batchImportState.value.netid = null
+  fileList.value = []
+  batchImportDialogOpen.value = true
+}
+
+const handleFileSelect = (file) => {
+  fileList.value = [file]
+  return false
+}
+
+const handleFileRemove = () => {
+  fileList.value = []
+}
+
+const doBatchImport = async () => {
+  if (!batchImportState.value.netid) {
+    return
+  }
+  if (fileList.value.length === 0) {
+    return
+  }
+  const formData = new FormData()
+  formData.append('netid', batchImportState.value.netid)
+  formData.append('file', fileList.value[0])
+  const response = await axios.post('/api/route/import', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  })
+  const status = response.data.status
+  if (status == 0) {
+    batchImportDialogOpen.value = false
+    updateRouteSource()
+  }
+}
 </script>

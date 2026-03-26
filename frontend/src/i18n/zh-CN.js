@@ -82,6 +82,9 @@ export default {
         add: '添加',
         delete: '删除',
         modalTitle: '路由配置',
+        batchImport: '批量导入',
+        batchImportTitle: '批量导入路由',
+        selectFile: '选择文件',
         columns: {
             network: '网络',
             devAddr: '设备地址',

@@ -82,6 +82,9 @@ export default {
         add: 'Add',
         delete: 'Delete',
         modalTitle: 'Route',
+        batchImport: 'Batch Import',
+        batchImportTitle: 'Batch Import Routes',
+        selectFile: 'Select File',
         columns: {
             network: 'Network',
             devAddr: 'Device Address',

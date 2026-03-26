@@ -57,6 +57,7 @@ func main() {
 	route.POST("/show", api.RouteShow)
 	route.POST("/insert", api.RouteInsert)
 	route.POST("/delete", api.RouteDelete)
+	route.POST("/import", api.RouteImport)
 
 	r.NoRoute(frontend.Static)
 
